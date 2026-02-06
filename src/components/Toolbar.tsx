@@ -2,9 +2,11 @@ import { useGameStore } from '../store/useGameStore';
 import {
   DEVICE_DEFS,
   DEVICES_2X2,
+  DEVICES_3X1,
   DEVICES_3X3,
   DEVICES_4X6,
   DEVICES_6X6,
+  DEVICES_9X9,
 } from '../constants/devices';
 import type { DeviceKind } from '../types';
 import type { PipelineElementKind } from '../types';
@@ -79,6 +81,19 @@ export function Toolbar() {
         ))}
       </div>
       <div className={styles.section}>
+        <span className={styles.label}>3×1</span>
+        {DEVICES_3X1.map((kind) => (
+          <button
+            key={kind}
+            className={isDeviceSelected(kind) ? styles.active : ''}
+            onClick={() => setToolMode({ device: kind })}
+            title={DEVICE_DEFS[kind].name}
+          >
+            {DEVICE_DEFS[kind].name}
+          </button>
+        ))}
+      </div>
+      <div className={styles.section}>
         <span className={styles.label}>3×3</span>
         {DEVICES_3X3.map((kind) => (
           <button
@@ -107,6 +122,19 @@ export function Toolbar() {
       <div className={styles.section}>
         <span className={styles.label}>6×6</span>
         {DEVICES_6X6.map((kind) => (
+          <button
+            key={kind}
+            className={isDeviceSelected(kind) ? styles.active : ''}
+            onClick={() => setToolMode({ device: kind })}
+            title={DEVICE_DEFS[kind].name}
+          >
+            {DEVICE_DEFS[kind].name}
+          </button>
+        ))}
+      </div>
+      <div className={styles.section}>
+        <span className={styles.label}>9×9</span>
+        {DEVICES_9X9.map((kind) => (
           <button
             key={kind}
             className={isDeviceSelected(kind) ? styles.active : ''}

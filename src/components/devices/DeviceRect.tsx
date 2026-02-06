@@ -15,6 +15,7 @@ export function DeviceRect({ device }: { device: GridDevice }) {
   const devices = useGameStore((s) => s.devices);
   const def = DEVICE_DEFS[device.kind];
   const [w, h] = parseSize(def.size);
+  // 需要供电的设备：3x3, 4x6, 6x6（不包括新设备）
   const isProduction = def.size === '3x3' || def.size === '4x6' || def.size === '6x6';
   const powered = isProduction ? isDevicePowered(device, devices) : true;
   const ox = (w * CELL) / 2;
@@ -110,6 +111,116 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         {/* 输入口在左侧，箭头指向设备内侧（向右） */}
         <ArrowAtCell cellCol={0} cellRow={0} direction="right" />
         <ArrowAtCell cellCol={0} cellRow={1} direction="right" />
+        {deviceNameText}
+      </Group>
+    );
+  }
+
+  // 仓库取货口：3x1，输出口在中间（第2个格子，索引1）
+  if (device.kind === 'warehouse_output') {
+    return (
+      <Group
+        x={groupX}
+        y={groupY}
+        rotation={device.rotation}
+        offsetX={ox}
+        offsetY={oy}
+        onClick={handleClick}
+        onTap={() => {
+          setSelectedDeviceId(device.id);
+          setEditModal({ type: 'device', device });
+        }}
+        listening
+      >
+        <Rect
+          x={0}
+          y={0}
+          width={rectW}
+          height={rectH}
+          fill={def.color}
+          stroke={isSelected ? '#4169E1' : '#333'}
+          strokeWidth={isSelected ? 3 : 1}
+        />
+        {/* 输出口在中间，箭头指向设备外侧（向右） */}
+        <ArrowAtCell cellCol={1} cellRow={0} direction="right" />
+        {deviceNameText}
+      </Group>
+    );
+  }
+
+  // 仓库存货口：3x1，输入口在中间（第2个格子，索引1）
+  if (device.kind === 'warehouse_input') {
+    return (
+      <Group
+        x={groupX}
+        y={groupY}
+        rotation={device.rotation}
+        offsetX={ox}
+        offsetY={oy}
+        onClick={handleClick}
+        onTap={() => {
+          setSelectedDeviceId(device.id);
+          setEditModal({ type: 'device', device });
+        }}
+        listening
+      >
+        <Rect
+          x={0}
+          y={0}
+          width={rectW}
+          height={rectH}
+          fill={def.color}
+          stroke={isSelected ? '#4169E1' : '#333'}
+          strokeWidth={isSelected ? 3 : 1}
+        />
+        {/* 输入口在中间，箭头指向设备内侧（向右） */}
+        <ArrowAtCell cellCol={1} cellRow={0} direction="right" />
+        {deviceNameText}
+      </Group>
+    );
+  }
+
+  // 协议核心：9x9，14个输入口（左右各7个）+ 6个输出口（上下各3个）
+  if (device.kind === 'protocol_core') {
+    return (
+      <Group
+        x={groupX}
+        y={groupY}
+        rotation={device.rotation}
+        offsetX={ox}
+        offsetY={oy}
+        onClick={handleClick}
+        onTap={() => {
+          setSelectedDeviceId(device.id);
+          setEditModal({ type: 'device', device });
+        }}
+        listening
+      >
+        <Rect
+          x={0}
+          y={0}
+          width={rectW}
+          height={rectH}
+          fill={def.color}
+          stroke={isSelected ? '#4169E1' : '#333'}
+          strokeWidth={isSelected ? 3 : 1}
+        />
+        {/* 左侧7个输入口（行1-7），箭头指向右（向内） */}
+        {[1, 2, 3, 4, 5, 6, 7].map((row) => (
+          <ArrowAtCell key={`left-${row}`} cellCol={0} cellRow={row} direction="right" />
+        ))}
+        {/* 右侧7个输入口（行1-7），箭头指向左（向内） */}
+        {[1, 2, 3, 4, 5, 6, 7].map((row) => (
+          <ArrowAtCell key={`right-${row}`} cellCol={8} cellRow={row} direction="left" />
+        ))}
+        {/* 上方3个输出口（列1, 4, 7），箭头指向上（向外） */}
+        {[1, 4, 7].map((col) => (
+          <ArrowAtCell key={`top-${col}`} cellCol={col} cellRow={0} direction="up" />
+        ))}
+        {/* 下方3个输出口（列1, 4, 7），箭头指向下（向外） */}
+        {[1, 4, 7].map((col) => (
+          <ArrowAtCell key={`bottom-${col}`} cellCol={col} cellRow={8} direction="down" />
+        ))}
         {deviceNameText}
       </Group>
     );

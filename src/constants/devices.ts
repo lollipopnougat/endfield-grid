@@ -111,10 +111,34 @@ export const DEVICE_DEFS: Record<DeviceKind, DeviceDef> = {
     name: '天有洪炉',
     color: '#6B8E23', // 橄榄
   },
+  warehouse_output: {
+    kind: 'warehouse_output',
+    size: '3x1',
+    name: '仓库取货口',
+    color: '#D3D3D3', // 浅灰色
+  },
+  warehouse_input: {
+    kind: 'warehouse_input',
+    size: '3x1',
+    name: '仓库存货口',
+    color: '#D3D3D3', // 浅灰色
+  },
+  protocol_core: {
+    kind: 'protocol_core',
+    size: '9x9',
+    name: '协议核心',
+    color: '#FFFFFF', // 白色
+  },
 };
 
 /** 2x2 设备列表（工具栏用） */
 export const DEVICES_2X2: DeviceKind[] = ['power_station', 'heat_pool'];
+
+/** 3x1 设备列表（工具栏用） */
+export const DEVICES_3X1: DeviceKind[] = ['warehouse_output', 'warehouse_input'];
+
+/** 9x9 设备列表（工具栏用） */
+export const DEVICES_9X9: DeviceKind[] = ['protocol_core'];
 
 /** 3x3 设备列表 */
 export const DEVICES_3X3: DeviceKind[] = [

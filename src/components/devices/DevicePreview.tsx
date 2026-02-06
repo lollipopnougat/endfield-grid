@@ -66,6 +66,48 @@ export function DevicePreview({
     );
   }
 
+  if (kind === 'warehouse_output') {
+    return (
+      <Group x={groupX} y={groupY} offsetX={ox} offsetY={oy} opacity={PREVIEW_OPACITY} listening={false}>
+        <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
+        <ArrowPath cellCol={1} cellRow={0} direction="right" />
+      </Group>
+    );
+  }
+
+  if (kind === 'warehouse_input') {
+    return (
+      <Group x={groupX} y={groupY} offsetX={ox} offsetY={oy} opacity={PREVIEW_OPACITY} listening={false}>
+        <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
+        <ArrowPath cellCol={1} cellRow={0} direction="right" />
+      </Group>
+    );
+  }
+
+  if (kind === 'protocol_core') {
+    return (
+      <Group x={groupX} y={groupY} offsetX={ox} offsetY={oy} opacity={PREVIEW_OPACITY} listening={false}>
+        <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
+        {/* 左侧7个输入口 */}
+        {[1, 2, 3, 4, 5, 6, 7].map((row) => (
+          <ArrowPath key={`left-${row}`} cellCol={0} cellRow={row} direction="right" />
+        ))}
+        {/* 右侧7个输入口 */}
+        {[1, 2, 3, 4, 5, 6, 7].map((row) => (
+          <ArrowPath key={`right-${row}`} cellCol={8} cellRow={row} direction="left" />
+        ))}
+        {/* 上方3个输出口 */}
+        {[1, 4, 7].map((col) => (
+          <ArrowPath key={`top-${col}`} cellCol={col} cellRow={0} direction="up" />
+        ))}
+        {/* 下方3个输出口 */}
+        {[1, 4, 7].map((col) => (
+          <ArrowPath key={`bottom-${col}`} cellCol={col} cellRow={8} direction="down" />
+        ))}
+      </Group>
+    );
+  }
+
   const numPorts = w === 3 ? 3 : 6;
   return (
     <Group x={groupX} y={groupY} offsetX={ox} offsetY={oy} opacity={PREVIEW_OPACITY} listening={false}>

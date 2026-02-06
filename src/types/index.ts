@@ -1,10 +1,13 @@
 /** 设备尺寸类型 */
-export type DeviceSize = '2x2' | '3x3' | '4x6' | '6x6';
+export type DeviceSize = '2x2' | '3x1' | '3x3' | '4x6' | '6x6' | '9x9';
 
 /** 设备类型 ID */
 export type DeviceKind =
   | 'power_station'   // 供电桩
   | 'heat_pool'       // 热能池
+  | 'warehouse_output' // 仓库取货口
+  | 'warehouse_input'  // 仓库存货口
+  | 'protocol_core'    // 协议核心
   | 'refinery'        // 精炼炉
   | 'crusher'         // 粉碎机
   | 'parts_machine'   // 配件机
