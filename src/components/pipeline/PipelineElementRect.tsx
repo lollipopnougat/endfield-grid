@@ -5,12 +5,17 @@ import { useGameStore } from '../../store/useGameStore';
 
 const CELL = CELL_SIZE;
 
+const CX = CELL / 2;
+const CY = CELL / 2;
+
+/** 贴靠网格：Group 的 (offsetX, offsetY) 放在 (col*CELL+cx, row*CELL+cy)，使矩形 (0,0)-(CELL,CELL) 占满格子 */
+function elementGroupPosition(col: number, row: number) {
+  return { x: col * CELL + CX, y: row * CELL + CY, offsetX: CX, offsetY: CY };
+}
+
 export function PipelineElementRect({ element }: { element: PipelineElementType }) {
   const setEditModal = useGameStore((s) => s.setEditModal);
-  const x = element.col * CELL;
-  const y = element.row * CELL;
-  const cx = CELL / 2;
-  const cy = CELL / 2;
+  const pos = elementGroupPosition(element.col, element.row);
   const r = rotationToDeg(element.rotation);
 
   const handleClick = () => {
@@ -19,17 +24,17 @@ export function PipelineElementRect({ element }: { element: PipelineElementType 
 
   if (element.kind === 'cross_bridge') {
     return (
-      <Group x={x} y={y} rotation={r} offsetX={cx} offsetY={cy} onClick={handleClick} onTap={handleClick}>
+      <Group {...pos} rotation={r} onClick={handleClick} onTap={handleClick}>
         <Rect width={CELL} height={CELL} fill="#FFD700" stroke="#333" />
-        <Line points={[cx, 0, cx, CELL]} stroke="black" strokeWidth={2} />
-        <Line points={[0, cy, CELL, cy]} stroke="black" strokeWidth={2} />
+        <Line points={[CX, 0, CX, CELL]} stroke="black" strokeWidth={2} />
+        <Line points={[0, CY, CELL, CY]} stroke="black" strokeWidth={2} />
       </Group>
     );
   }
 
   if (element.kind === 'splitter') {
     return (
-      <Group x={x} y={y} rotation={r} offsetX={cx} offsetY={cy} onClick={handleClick} onTap={handleClick}>
+      <Group {...pos} rotation={r} onClick={handleClick} onTap={handleClick}>
         <Rect width={CELL} height={CELL} fill="#FFD700" stroke="#333" />
         <ThreeArrowsFromLeft />
       </Group>
@@ -38,7 +43,7 @@ export function PipelineElementRect({ element }: { element: PipelineElementType 
 
   if (element.kind === 'merger') {
     return (
-      <Group x={x} y={y} rotation={r} offsetX={cx} offsetY={cy} onClick={handleClick} onTap={handleClick}>
+      <Group {...pos} rotation={r} onClick={handleClick} onTap={handleClick}>
         <Rect width={CELL} height={CELL} fill="#FFD700" stroke="#333" />
         <ThreeArrowsToRight />
       </Group>
@@ -53,13 +58,11 @@ function rotationToDeg(r: Rotation): number {
 }
 
 function ThreeArrowsFromLeft() {
-  const cx = CELL / 2;
-  const cy = CELL / 2;
   const arr = 5;
   const paths = [
-    `M ${cx - arr} ${cy} L ${cx + arr} ${cy - arr} L ${cx + arr} ${cy + arr} Z`,
-    `M ${cx} ${cy - arr} L ${cx + arr} ${cy} L ${cx} ${cy + arr} Z`,
-    `M ${cx} ${cy + arr} L ${cx - arr} ${cy} L ${cx + arr} ${cy} Z`,
+    `M ${CX - arr} ${CY} L ${CX + arr} ${CY - arr} L ${CX + arr} ${CY + arr} Z`,
+    `M ${CX} ${CY - arr} L ${CX + arr} ${CY} L ${CX} ${CY + arr} Z`,
+    `M ${CX} ${CY + arr} L ${CX - arr} ${CY} L ${CX + arr} ${CY} Z`,
   ];
   return (
     <>
@@ -71,13 +74,11 @@ function ThreeArrowsFromLeft() {
 }
 
 function ThreeArrowsToRight() {
-  const cx = CELL / 2;
-  const cy = CELL / 2;
   const arr = 5;
   const paths = [
-    `M ${cx + arr} ${cy} L ${cx - arr} ${cy - arr} L ${cx - arr} ${cy + arr} Z`,
-    `M ${cx} ${cy - arr} L ${cx - arr} ${cy} L ${cx} ${cy + arr} Z`,
-    `M ${cx} ${cy + arr} L ${cx + arr} ${cy} L ${cx - arr} ${cy} Z`,
+    `M ${CX + arr} ${CY} L ${CX - arr} ${CY - arr} L ${CX - arr} ${CY + arr} Z`,
+    `M ${CX} ${CY - arr} L ${CX - arr} ${CY} L ${CX} ${CY + arr} Z`,
+    `M ${CX} ${CY + arr} L ${CX + arr} ${CY} L ${CX - arr} ${CY} Z`,
   ];
   return (
     <>

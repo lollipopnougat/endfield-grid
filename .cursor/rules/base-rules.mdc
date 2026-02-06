@@ -7,3 +7,8 @@ alwaysApply: true
 - 使用完善的typescript类型，不能使用any
 - 代码需要经过eslint和prettier检查
 - 关键逻辑需要带有注释
+
+# 提交规范
+
+
+提交时使用 "feat: 中文提交信息" 这种格式编写提交信息

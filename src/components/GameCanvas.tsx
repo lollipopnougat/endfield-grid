@@ -6,6 +6,7 @@ import { GridLayer } from './grid/GridLayer';
 import { DevicesLayer } from './devices/DevicesLayer';
 import { DevicePreview } from './devices/DevicePreview';
 import { PipelineLayer } from './pipeline/PipelineLayer';
+import { PipelineElementPreview } from './pipeline/PipelineElementPreview';
 import { getCoordFromPoint } from '../utils/canvasCoord';
 import { canPlaceDevice, canPlacePipelineElement } from '../utils/placeDevice';
 import { getDirection, isAdjacent } from '../utils/pipelineDraw';
@@ -25,6 +26,8 @@ export function GameCanvas() {
   const [pipelineDraw, setPipelineDraw] = useState<PipelineDrawState | null>(null);
   /** 放置设备时，鼠标所在格子的预览位置（贴靠网格） */
   const [devicePreviewCell, setDevicePreviewCell] = useState<{ col: number; row: number } | null>(null);
+  /** 放置流水线连接元素时，鼠标所在格子的预览位置 */
+  const [elementPreviewCell, setElementPreviewCell] = useState<{ col: number; row: number } | null>(null);
   const {
     view,
     setView,
@@ -58,6 +61,9 @@ export function GameCanvas() {
   useEffect(() => {
     if (typeof toolMode !== 'object' || !('device' in toolMode)) {
       setDevicePreviewCell(null);
+    }
+    if (typeof toolMode !== 'object' || !('pipelineElement' in toolMode)) {
+      setElementPreviewCell(null);
     }
   }, [toolMode]);
 
@@ -97,7 +103,10 @@ export function GameCanvas() {
       if (e.target.getType() !== 'Stage') return;
       const isRightClick = 'button' in e.evt && e.evt.button === 2;
       if (isRightClick) {
-        if (typeof toolMode === 'object' && 'device' in toolMode) {
+        if (
+          typeof toolMode === 'object' &&
+          ('device' in toolMode || 'pipelineElement' in toolMode)
+        ) {
           e.evt.preventDefault();
           setToolMode('select');
         }
@@ -273,13 +282,22 @@ export function GameCanvas() {
       }
 
       if (typeof toolMode === 'object' && 'device' in toolMode) {
+        setElementPreviewCell(null);
         if (col >= 0 && row >= 0 && col < state.gridCols && row < state.gridRows) {
           setDevicePreviewCell({ col, row });
         } else {
           setDevicePreviewCell(null);
         }
+      } else if (typeof toolMode === 'object' && 'pipelineElement' in toolMode) {
+        setDevicePreviewCell(null);
+        if (col >= 0 && row >= 0 && col < state.gridCols && row < state.gridRows) {
+          setElementPreviewCell({ col, row });
+        } else {
+          setElementPreviewCell(null);
+        }
       } else {
         setDevicePreviewCell(null);
+        setElementPreviewCell(null);
       }
     },
     [toolMode, view, pipelineDraw, handlePipelineMouseMove]
@@ -287,6 +305,7 @@ export function GameCanvas() {
 
   const handleStageMouseLeave = useCallback(() => {
     setDevicePreviewCell(null);
+    setElementPreviewCell(null);
     setPipelineDraw(null);
   }, []);
 
@@ -294,6 +313,7 @@ export function GameCanvas() {
   const stageH = useGameStore((s) => s.stageHeight);
   const isPipelineTool = toolMode === 'pipeline';
   const isDevicePlaceMode = typeof toolMode === 'object' && 'device' in toolMode;
+  const isElementPlaceMode = typeof toolMode === 'object' && 'pipelineElement' in toolMode;
   const canPlacePreview =
     devicePreviewCell &&
     isDevicePlaceMode &&
@@ -304,10 +324,24 @@ export function GameCanvas() {
       useGameStore.getState()
     );
   const showDevicePreview = Boolean(canPlacePreview && devicePreviewCell && isDevicePlaceMode);
+  const canPlaceElementPreview =
+    elementPreviewCell &&
+    isElementPlaceMode &&
+    canPlacePipelineElement(
+      elementPreviewCell.col,
+      elementPreviewCell.row,
+      useGameStore.getState()
+    );
+  const showElementPreview = Boolean(
+    canPlaceElementPreview && elementPreviewCell && isElementPlaceMode
+  );
 
   const handleContainerContextMenu = useCallback(
     (e: React.MouseEvent) => {
-      if (typeof toolMode === 'object' && 'device' in toolMode) {
+      if (
+        typeof toolMode === 'object' &&
+        ('device' in toolMode || 'pipelineElement' in toolMode)
+      ) {
         e.preventDefault();
         setToolMode('select');
       }
@@ -355,6 +389,15 @@ export function GameCanvas() {
               kind={toolMode.device}
               col={devicePreviewCell.col}
               row={devicePreviewCell.row}
+            />
+          </Layer>
+        )}
+        {showElementPreview && elementPreviewCell && isElementPlaceMode && (
+          <Layer listening={false}>
+            <PipelineElementPreview
+              kind={toolMode.pipelineElement}
+              col={elementPreviewCell.col}
+              row={elementPreviewCell.row}
             />
           </Layer>
         )}

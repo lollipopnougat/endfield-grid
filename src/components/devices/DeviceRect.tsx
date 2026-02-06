@@ -1,4 +1,4 @@
-import { Group, Rect, Circle, Line, Path } from 'react-konva';
+import { Group, Rect, Circle, Line, Path, Text } from 'react-konva';
 import type { GridDevice } from '../../types';
 import { DEVICE_DEFS, parseSize } from '../../constants/devices';
 import { CELL_SIZE } from '../../constants/grid';
@@ -24,6 +24,26 @@ export function DeviceRect({ device }: { device: GridDevice }) {
   // 贴靠网格：Group 的 (offsetX, offsetY) 放在 (col*CELL+ox, row*CELL+oy)，使矩形 (0,0)-(w*CELL,h*CELL) 刚好占满格子
   const groupX = device.col * CELL + ox;
   const groupY = device.row * CELL + oy;
+  const rectW = w * CELL;
+  const rectH = h * CELL;
+  const fontSize = Math.max(10, Math.min(14, Math.min(rectW, rectH) * 0.28));
+  const deviceNameText = (
+    <Text
+      x={0}
+      y={0}
+      width={rectW}
+      height={rectH}
+      text={def.name}
+      fontSize={fontSize}
+      fontFamily="sans-serif"
+      align="center"
+      verticalAlign="middle"
+      fill="#333"
+      listening={false}
+      wrap="none"
+      ellipsis
+    />
+  );
 
   if (device.kind === 'power_station') {
     return (
@@ -38,6 +58,7 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         listening
       >
         <Circle x={ox} y={oy} radius={CELL} fill={def.color} stroke="#333" strokeWidth={1} />
+        {deviceNameText}
       </Group>
     );
   }
@@ -54,10 +75,11 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         onTap={handleClick}
         listening
       >
-        <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
+        <Rect x={0} y={0} width={rectW} height={rectH} fill={def.color} stroke="#333" />
         {/* 输入口在左侧，箭头指向设备内侧（向右） */}
         <ArrowAtCell cellCol={0} cellRow={0} direction="right" />
         <ArrowAtCell cellCol={0} cellRow={1} direction="right" />
+        {deviceNameText}
       </Group>
     );
   }
@@ -78,8 +100,8 @@ export function DeviceRect({ device }: { device: GridDevice }) {
       <Rect
         x={0}
         y={0}
-        width={w * CELL}
-        height={h * CELL}
+        width={rectW}
+        height={rectH}
         fill={def.color}
         stroke="#333"
       />
@@ -89,6 +111,7 @@ export function DeviceRect({ device }: { device: GridDevice }) {
       {Array.from({ length: numPorts }, (_, i) => (
         <ArrowAtCell key={'out-' + i} cellCol={w - 1} cellRow={i} direction="right" />
       ))}
+      {deviceNameText}
       {!powered && (
         <Group x={ox} y={oy} offsetX={12} offsetY={12}>
           <Circle x={0} y={0} r={14} fill="red" />

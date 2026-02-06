@@ -16,7 +16,9 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const [rows, setRows] = useState(gridRows);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCols(gridCols);
+     
     setRows(gridRows);
   }, [gridCols, gridRows]);
 
