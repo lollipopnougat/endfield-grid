@@ -3,12 +3,14 @@ import { useGameStore } from '../store/useGameStore';
 import { CELL_SIZE } from '../constants/grid';
 import { SettingsModal } from './SettingsModal';
 import { ConfirmModal } from './ConfirmModal';
+import { AboutModal } from './AboutModal';
 import { SaveLoad } from './SaveLoad';
 import styles from './Header.module.css';
 
 export function Header() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const gridCols = useGameStore((s) => s.gridCols);
   const gridRows = useGameStore((s) => s.gridRows);
   const setView = useGameStore((s) => s.setView);
@@ -40,7 +42,7 @@ export function Header() {
 
   return (
     <div className={styles.header}>
-      <span className={styles.title}>流水线布局</span>
+      <span className={styles.title}>终末地流水线布局</span>
       <div className={styles.actions}>
         <button type="button" onClick={fitToScreen}>
           适配屏幕
@@ -50,6 +52,9 @@ export function Header() {
         </button>
         <button type="button" onClick={handleClearDevices}>
           清空画布
+        </button>
+        <button type="button" onClick={() => setAboutOpen(true)}>
+          关于
         </button>
         <SaveLoad />
         <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
@@ -62,6 +67,7 @@ export function Header() {
           onConfirm={handleConfirmClear}
           onCancel={() => setConfirmOpen(false)}
         />
+        <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
       </div>
     </div>
   );

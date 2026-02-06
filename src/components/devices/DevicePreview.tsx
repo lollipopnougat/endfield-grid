@@ -60,8 +60,8 @@ export function DevicePreview({
     return (
       <Group x={groupX} y={groupY} offsetX={ox} offsetY={oy} opacity={PREVIEW_OPACITY} listening={false}>
         <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
-        <ArrowPath cellCol={0} cellRow={0} direction="right" />
-        <ArrowPath cellCol={0} cellRow={1} direction="right" />
+        <ArrowPath cellCol={0} cellRow={0} direction="left" />
+        <ArrowPath cellCol={0} cellRow={1} direction="left" />
       </Group>
     );
   }
@@ -70,7 +70,7 @@ export function DevicePreview({
     return (
       <Group x={groupX} y={groupY} offsetX={ox} offsetY={oy} opacity={PREVIEW_OPACITY} listening={false}>
         <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
-        <ArrowPath cellCol={1} cellRow={0} direction="right" />
+        <ArrowPath cellCol={1} cellRow={0} direction="up" />
       </Group>
     );
   }
@@ -79,7 +79,7 @@ export function DevicePreview({
     return (
       <Group x={groupX} y={groupY} offsetX={ox} offsetY={oy} opacity={PREVIEW_OPACITY} listening={false}>
         <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
-        <ArrowPath cellCol={1} cellRow={0} direction="right" />
+        <ArrowPath cellCol={1} cellRow={0} direction="down" />
       </Group>
     );
   }
@@ -90,19 +90,19 @@ export function DevicePreview({
         <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
         {/* 左侧7个输入口 */}
         {[1, 2, 3, 4, 5, 6, 7].map((row) => (
-          <ArrowPath key={`left-${row}`} cellCol={0} cellRow={row} direction="right" />
+          <ArrowPath key={`left-${row}`} cellCol={0} cellRow={row} direction="left" />
         ))}
         {/* 右侧7个输入口 */}
         {[1, 2, 3, 4, 5, 6, 7].map((row) => (
-          <ArrowPath key={`right-${row}`} cellCol={8} cellRow={row} direction="left" />
+          <ArrowPath key={`right-${row}`} cellCol={8} cellRow={row} direction="right" />
         ))}
         {/* 上方3个输出口 */}
         {[1, 4, 7].map((col) => (
-          <ArrowPath key={`top-${col}`} cellCol={col} cellRow={0} direction="up" />
+          <ArrowPath key={`top-${col}`} cellCol={col} cellRow={0} direction="down" />
         ))}
         {/* 下方3个输出口 */}
         {[1, 4, 7].map((col) => (
-          <ArrowPath key={`bottom-${col}`} cellCol={col} cellRow={8} direction="down" />
+          <ArrowPath key={`bottom-${col}`} cellCol={col} cellRow={8} direction="up" />
         ))}
       </Group>
     );
@@ -120,10 +120,10 @@ export function DevicePreview({
         stroke="#333"
       />
       {Array.from({ length: numPorts }, (_, i) => (
-        <ArrowPath key={'in-' + i} cellCol={0} cellRow={i} direction="right" />
+        <ArrowPath key={'in-' + i} cellCol={0} cellRow={i} direction="left" />
       ))}
       {Array.from({ length: numPorts }, (_, i) => (
-        <ArrowPath key={'out-' + i} cellCol={w - 1} cellRow={i} direction="right" />
+        <ArrowPath key={'out-' + i} cellCol={w - 1} cellRow={i} direction="left" />
       ))}
     </Group>
   );

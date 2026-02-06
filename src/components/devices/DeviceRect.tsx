@@ -108,9 +108,9 @@ export function DeviceRect({ device }: { device: GridDevice }) {
           stroke={isSelected ? '#4169E1' : '#333'}
           strokeWidth={isSelected ? 3 : 1}
         />
-        {/* 输入口在左侧，箭头指向设备内侧（向右） */}
-        <ArrowAtCell cellCol={0} cellRow={0} direction="right" />
-        <ArrowAtCell cellCol={0} cellRow={1} direction="right" />
+        {/* 输入口在左侧，箭头指向设备内侧（向左） */}
+        <ArrowAtCell cellCol={0} cellRow={0} direction="left" />
+        <ArrowAtCell cellCol={0} cellRow={1} direction="left" />
         {deviceNameText}
       </Group>
     );
@@ -141,8 +141,8 @@ export function DeviceRect({ device }: { device: GridDevice }) {
           stroke={isSelected ? '#4169E1' : '#333'}
           strokeWidth={isSelected ? 3 : 1}
         />
-        {/* 输出口在中间，箭头指向设备外侧（向右） */}
-        <ArrowAtCell cellCol={1} cellRow={0} direction="right" />
+        {/* 输出口在中间，箭头指向设备外侧（向上） */}
+        <ArrowAtCell cellCol={1} cellRow={0} direction="up" />
         {deviceNameText}
       </Group>
     );
@@ -173,8 +173,8 @@ export function DeviceRect({ device }: { device: GridDevice }) {
           stroke={isSelected ? '#4169E1' : '#333'}
           strokeWidth={isSelected ? 3 : 1}
         />
-        {/* 输入口在中间，箭头指向设备内侧（向右） */}
-        <ArrowAtCell cellCol={1} cellRow={0} direction="right" />
+        {/* 输入口在中间，箭头指向设备内侧（向下） */}
+        <ArrowAtCell cellCol={1} cellRow={0} direction="down" />
         {deviceNameText}
       </Group>
     );
@@ -205,21 +205,21 @@ export function DeviceRect({ device }: { device: GridDevice }) {
           stroke={isSelected ? '#4169E1' : '#333'}
           strokeWidth={isSelected ? 3 : 1}
         />
-        {/* 左侧7个输入口（行1-7），箭头指向右（向内） */}
+        {/* 左侧7个输入口（行1-7），箭头指向左（向内） */}
         {[1, 2, 3, 4, 5, 6, 7].map((row) => (
-          <ArrowAtCell key={`left-${row}`} cellCol={0} cellRow={row} direction="right" />
+          <ArrowAtCell key={`left-${row}`} cellCol={0} cellRow={row} direction="left" />
         ))}
-        {/* 右侧7个输入口（行1-7），箭头指向左（向内） */}
+        {/* 右侧7个输入口（行1-7），箭头指向右（向内） */}
         {[1, 2, 3, 4, 5, 6, 7].map((row) => (
-          <ArrowAtCell key={`right-${row}`} cellCol={8} cellRow={row} direction="left" />
+          <ArrowAtCell key={`right-${row}`} cellCol={8} cellRow={row} direction="right" />
         ))}
-        {/* 上方3个输出口（列1, 4, 7），箭头指向上（向外） */}
+        {/* 上方3个输出口（列1, 4, 7），箭头指向下（向外） */}
         {[1, 4, 7].map((col) => (
-          <ArrowAtCell key={`top-${col}`} cellCol={col} cellRow={0} direction="up" />
+          <ArrowAtCell key={`top-${col}`} cellCol={col} cellRow={0} direction="down" />
         ))}
-        {/* 下方3个输出口（列1, 4, 7），箭头指向下（向外） */}
+        {/* 下方3个输出口（列1, 4, 7），箭头指向上（向外） */}
         {[1, 4, 7].map((col) => (
-          <ArrowAtCell key={`bottom-${col}`} cellCol={col} cellRow={8} direction="down" />
+          <ArrowAtCell key={`bottom-${col}`} cellCol={col} cellRow={8} direction="up" />
         ))}
         {deviceNameText}
       </Group>
@@ -249,10 +249,10 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         strokeWidth={isSelected ? 3 : 1}
       />
       {Array.from({ length: numPorts }, (_, i) => (
-        <ArrowAtCell key={'in-' + i} cellCol={0} cellRow={i} direction="right" />
+        <ArrowAtCell key={'in-' + i} cellCol={0} cellRow={i} direction="left" />
       ))}
       {Array.from({ length: numPorts }, (_, i) => (
-        <ArrowAtCell key={'out-' + i} cellCol={w - 1} cellRow={i} direction="right" />
+        <ArrowAtCell key={'out-' + i} cellCol={w - 1} cellRow={i} direction="left" />
       ))}
       {deviceNameText}
       {!powered && (
