@@ -1,0 +1,9 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "arrowParens": "always",
+  "arrowBodyStyle": "as-needed",
+  "objectCurlySpacing": "always",
+  "arrayBracketSpacing": "never"
+}

@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+# 代码生成规范
+
+- 使用完善的typescript类型，不能使用any
+- 代码需要经过eslint和prettier检查
+- 关键逻辑需要带有注释

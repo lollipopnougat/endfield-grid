@@ -1,0 +1,70 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #2a2a2a;
+  border-radius: 8px;
+  padding: 1.25rem;
+  min-width: 280px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.modal h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.field {
+  margin-bottom: 0.75rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.field input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  font-size: 1rem;
+  background: #1a1a1a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #eee;
+  box-sizing: border-box;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.actions button {
+  padding: 0.4rem 0.8rem;
+}
+
+.meta {
+  color: #aaa;
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+
+.danger {
+  background: #8b2020 !important;
+  border-color: #a03030 !important;
+}
+
+.danger:hover {
+  background: #a03030 !important;
+}

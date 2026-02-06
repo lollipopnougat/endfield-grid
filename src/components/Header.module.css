@@ -1,0 +1,24 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: #252525;
+  border-bottom: 1px solid #444;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actions button {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.9rem;
+}
