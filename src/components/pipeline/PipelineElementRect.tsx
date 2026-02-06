@@ -22,7 +22,7 @@ export function PipelineElementRect({ element }: { element: PipelineElementType 
   const r = rotationToDeg(element.rotation);
   const isSelected = selectedElementId === element.id;
 
-  const handleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleClick = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if ('button' in e.evt && e.evt.button === 2) return;
     setSelectedElementId(element.id);
     setEditModal({ type: 'pipeline_element', element });
@@ -54,7 +54,7 @@ export function PipelineElementRect({ element }: { element: PipelineElementType 
           stroke={isSelected ? '#4169E1' : '#333'}
           strokeWidth={isSelected ? 3 : 1}
         />
-        <ThreeArrowsFromLeft />
+        <SplitterIcon />
       </Group>
     );
   }
@@ -69,7 +69,7 @@ export function PipelineElementRect({ element }: { element: PipelineElementType 
           stroke={isSelected ? '#4169E1' : '#333'}
           strokeWidth={isSelected ? 3 : 1}
         />
-        <ThreeArrowsToRight />
+        <MergerIcon />
       </Group>
     );
   }
@@ -81,34 +81,51 @@ function rotationToDeg(r: Rotation): number {
   return r;
 }
 
-function ThreeArrowsFromLeft() {
-  const arr = 5;
-  const paths = [
-    `M ${CX - arr} ${CY} L ${CX + arr} ${CY - arr} L ${CX + arr} ${CY + arr} Z`,
-    `M ${CX} ${CY - arr} L ${CX + arr} ${CY} L ${CX} ${CY + arr} Z`,
-    `M ${CX} ${CY + arr} L ${CX - arr} ${CY} L ${CX + arr} ${CY} Z`,
-  ];
+/** 分流器图标：四个黑色三角形分别位于上、下、左、右，指向上下右右 */
+function SplitterIcon() {
+  const arr = 6; // 箭头大小
+  const margin = 4; // 距离边缘的距离
+  
+  // 上方三角形（指向上）
+  const topPath = `M ${CX} ${margin} L ${CX - arr} ${margin + arr} L ${CX + arr} ${margin + arr} Z`;
+  // 下方三角形（指向下）
+  const bottomPath = `M ${CX} ${CELL - margin} L ${CX - arr} ${CELL - margin - arr} L ${CX + arr} ${CELL - margin - arr} Z`;
+  // 左侧三角形（指向右）：顶点在左侧边缘
+  const leftPath = `M ${margin} ${CY} L ${margin + arr} ${CY - arr} L ${margin + arr} ${CY + arr} Z`;
+  // 右侧三角形（指向右）：顶点在内部，底边在右侧边缘
+  const rightPath = `M ${CELL - margin - arr} ${CY} L ${CELL - margin} ${CY - arr} L ${CELL - margin} ${CY + arr} Z`;
+  
   return (
     <>
-      {paths.map((p, i) => (
-        <Path key={i} data={p} fill="black" listening={false} />
-      ))}
+      <Path data={topPath} fill="black" listening={false} />
+      <Path data={bottomPath} fill="black" listening={false} />
+      <Path data={leftPath} fill="black" listening={false} />
+      <Path data={rightPath} fill="black" listening={false} />
     </>
   );
 }
 
-function ThreeArrowsToRight() {
-  const arr = 5;
-  const paths = [
-    `M ${CX + arr} ${CY} L ${CX - arr} ${CY - arr} L ${CX - arr} ${CY + arr} Z`,
-    `M ${CX} ${CY - arr} L ${CX - arr} ${CY} L ${CX} ${CY + arr} Z`,
-    `M ${CX} ${CY + arr} L ${CX + arr} ${CY} L ${CX - arr} ${CY} Z`,
-  ];
+/** 合流器图标：四个黑色三角形位于边缘中点，分别指向下、上、右、右 */
+function MergerIcon() {
+  const arr = 6; // 箭头大小
+  const margin = 4; // 距离边缘的距离
+  
+  // 上方三角形（指向下）
+  const topPath = `M ${CX} ${margin + arr} L ${CX - arr} ${margin} L ${CX + arr} ${margin} Z`;
+  // 下方三角形（指向上）
+  const bottomPath = `M ${CX} ${CELL - margin - arr} L ${CX - arr} ${CELL - margin} L ${CX + arr} ${CELL - margin} Z`;
+  // 左侧三角形（指向右）：顶点在左侧边缘
+  const leftPath = `M ${margin} ${CY} L ${margin + arr} ${CY - arr} L ${margin + arr} ${CY + arr} Z`;
+  // 右侧三角形（指向右）：顶点在内部，底边在右侧边缘
+  const rightPath = `M ${CELL - margin - arr} ${CY} L ${CELL - margin} ${CY - arr} L ${CELL - margin} ${CY + arr} Z`;
+  
   return (
     <>
-      {paths.map((p, i) => (
-        <Path key={i} data={p} fill="black" listening={false} />
-      ))}
+      {/* 四个三角形 */}
+      <Path data={topPath} fill="black" listening={false} />
+      <Path data={bottomPath} fill="black" listening={false} />
+      <Path data={leftPath} fill="black" listening={false} />
+      <Path data={rightPath} fill="black" listening={false} />
     </>
   );
 }

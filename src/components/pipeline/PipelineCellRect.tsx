@@ -29,7 +29,7 @@ export function PipelineCellRect({ cell }: { cell: PipelineCell }) {
       break;
   }
 
-  const handleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleClick = (e: Konva.KonvaEventObject<MouseEvent> | Konva.KonvaEventObject<TouchEvent>) => {
     if ('button' in e.evt && e.evt.button === 2) return;
     setEditModal({ type: 'pipeline_cell', cell });
   };
