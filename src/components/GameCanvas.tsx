@@ -28,6 +28,8 @@ export function GameCanvas() {
   const [devicePreviewCell, setDevicePreviewCell] = useState<{ col: number; row: number } | null>(null);
   /** 放置流水线连接元素时，鼠标所在格子的预览位置 */
   const [elementPreviewCell, setElementPreviewCell] = useState<{ col: number; row: number } | null>(null);
+  /** 移动设备时，鼠标所在格子的预览位置 */
+  const [movingDevicePreviewCell, setMovingDevicePreviewCell] = useState<{ col: number; row: number } | null>(null);
   const {
     view,
     setView,
@@ -42,6 +44,8 @@ export function GameCanvas() {
     addPipelineCell,
     addPipelineElement,
     updatePipelineCell,
+    setSelectedDeviceId,
+    setSelectedElementId,
     devices,
     gridCols,
     gridRows,
@@ -66,6 +70,12 @@ export function GameCanvas() {
       setElementPreviewCell(null);
     }
   }, [toolMode]);
+
+  useEffect(() => {
+    if (!movingDeviceId) {
+      setMovingDevicePreviewCell(null);
+    }
+  }, [movingDeviceId]);
 
   const handleWheel = useCallback(
     (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -112,6 +122,8 @@ export function GameCanvas() {
         }
         return;
       }
+      setSelectedDeviceId(null);
+      setSelectedElementId(null);
       if (pipelineDraw) return;
       const stage = stageRef.current;
       if (!stage) return;
@@ -155,6 +167,8 @@ export function GameCanvas() {
       toolMode,
       view,
       setToolMode,
+      setSelectedDeviceId,
+      setSelectedElementId,
       placeDevice,
       movingDeviceId,
       movingPipelineElementId,
@@ -277,12 +291,25 @@ export function GameCanvas() {
 
       if (pipelineDraw && toolMode === 'pipeline') {
         setDevicePreviewCell(null);
+        setMovingDevicePreviewCell(null);
         handlePipelineMouseMove(e as Konva.KonvaEventObject<MouseEvent>);
+        return;
+      }
+
+      if (movingDeviceId) {
+        setDevicePreviewCell(null);
+        setElementPreviewCell(null);
+        if (col >= 0 && row >= 0 && col < state.gridCols && row < state.gridRows) {
+          setMovingDevicePreviewCell({ col, row });
+        } else {
+          setMovingDevicePreviewCell(null);
+        }
         return;
       }
 
       if (typeof toolMode === 'object' && 'device' in toolMode) {
         setElementPreviewCell(null);
+        setMovingDevicePreviewCell(null);
         if (col >= 0 && row >= 0 && col < state.gridCols && row < state.gridRows) {
           setDevicePreviewCell({ col, row });
         } else {
@@ -290,6 +317,7 @@ export function GameCanvas() {
         }
       } else if (typeof toolMode === 'object' && 'pipelineElement' in toolMode) {
         setDevicePreviewCell(null);
+        setMovingDevicePreviewCell(null);
         if (col >= 0 && row >= 0 && col < state.gridCols && row < state.gridRows) {
           setElementPreviewCell({ col, row });
         } else {
@@ -298,14 +326,16 @@ export function GameCanvas() {
       } else {
         setDevicePreviewCell(null);
         setElementPreviewCell(null);
+        setMovingDevicePreviewCell(null);
       }
     },
-    [toolMode, view, pipelineDraw, handlePipelineMouseMove]
+    [toolMode, view, pipelineDraw, handlePipelineMouseMove, movingDeviceId]
   );
 
   const handleStageMouseLeave = useCallback(() => {
     setDevicePreviewCell(null);
     setElementPreviewCell(null);
+    setMovingDevicePreviewCell(null);
     setPipelineDraw(null);
   }, []);
 
@@ -334,6 +364,22 @@ export function GameCanvas() {
     );
   const showElementPreview = Boolean(
     canPlaceElementPreview && elementPreviewCell && isElementPlaceMode
+  );
+  const movingDevice = movingDeviceId
+    ? useGameStore.getState().devices.find((d) => d.id === movingDeviceId)
+    : null;
+  const canPlaceMovingDevice =
+    movingDevicePreviewCell &&
+    movingDevice &&
+    canPlaceDevice(
+      movingDevice.kind,
+      movingDevicePreviewCell.col,
+      movingDevicePreviewCell.row,
+      useGameStore.getState(),
+      movingDeviceId || undefined
+    );
+  const showMovingDevicePreview = Boolean(
+    canPlaceMovingDevice && movingDevicePreviewCell && movingDevice
   );
 
   const handleContainerContextMenu = useCallback(
@@ -398,6 +444,15 @@ export function GameCanvas() {
               kind={toolMode.pipelineElement}
               col={elementPreviewCell.col}
               row={elementPreviewCell.row}
+            />
+          </Layer>
+        )}
+        {showMovingDevicePreview && movingDevicePreviewCell && movingDevice && (
+          <Layer listening={false}>
+            <DevicePreview
+              kind={movingDevice.kind}
+              col={movingDevicePreviewCell.col}
+              row={movingDevicePreviewCell.row}
             />
           </Layer>
         )}

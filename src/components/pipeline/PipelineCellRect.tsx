@@ -1,4 +1,5 @@
 import { Group, Rect, Path } from 'react-konva';
+import Konva from 'konva';
 import type { PipelineCell } from '../../types';
 import { CELL_SIZE } from '../../constants/grid';
 import { useGameStore } from '../../store/useGameStore';
@@ -28,8 +29,13 @@ export function PipelineCellRect({ cell }: { cell: PipelineCell }) {
       break;
   }
 
+  const handleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if ('button' in e.evt && e.evt.button === 2) return;
+    setEditModal({ type: 'pipeline_cell', cell });
+  };
+
   return (
-    <Group x={x} y={y} onClick={() => setEditModal({ type: 'pipeline_cell', cell })} onTap={() => setEditModal({ type: 'pipeline_cell', cell })}>
+    <Group x={x} y={y} onClick={handleClick} onTap={handleClick}>
       <Rect width={CELL} height={CELL} fill="#FFD700" stroke="#333" />
       <Path data={path} fill="black" listening={false} />
     </Group>

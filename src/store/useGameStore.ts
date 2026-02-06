@@ -22,6 +22,10 @@ interface GameState {
   view: ViewState;
   toolMode: ToolMode;
   editModal: EditModalType;
+  /** 选中的设备 id（用于高亮） */
+  selectedDeviceId: string | null;
+  /** 选中的流水线连接元素 id（用于高亮） */
+  selectedElementId: string | null;
   /** 移动中的设备 id，下次点击放置 */
   movingDeviceId: string | null;
   /** 移动中的流水线连接元素 id */
@@ -48,6 +52,8 @@ interface GameState {
   setView: (v: Partial<ViewState>) => void;
   setToolMode: (mode: ToolMode) => void;
   setEditModal: (modal: EditModalType) => void;
+  setSelectedDeviceId: (id: string | null) => void;
+  setSelectedElementId: (id: string | null) => void;
   setMovingDeviceId: (id: string | null) => void;
   setMovingPipelineElementId: (id: string | null) => void;
   setStageSize: (w: number, h: number) => void;
@@ -70,6 +76,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   view: defaultView,
   toolMode: 'select',
   editModal: null,
+  selectedDeviceId: null,
+  selectedElementId: null,
   movingDeviceId: null,
   movingPipelineElementId: null,
   stageWidth: 800,
@@ -148,6 +156,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   setView: (v) => set((s) => ({ view: { ...s.view, ...v } })),
   setToolMode: (mode) => set({ toolMode: mode }),
   setEditModal: (modal) => set({ editModal: modal }),
+  setSelectedDeviceId: (id) => set({ selectedDeviceId: id }),
+  setSelectedElementId: (id) => set({ selectedElementId: id }),
   setMovingDeviceId: (id) => set({ movingDeviceId: id }),
   setMovingPipelineElementId: (id) => set({ movingPipelineElementId: id }),
   setStageSize: (w, h) => set({ stageWidth: w, stageHeight: h }),

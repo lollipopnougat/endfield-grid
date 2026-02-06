@@ -58,13 +58,28 @@ export function isCellPowered(
   for (const d of devices) {
     const def = DEVICE_DEFS[d.kind];
     if (!def.isPowerSource || def.powerRange == null) continue;
-    const range = def.powerRange;
     const [cx, cy] = getPowerStationCenter(d);
+    // 12x12 范围：以供电桩中心为中心，左右各6格，上下各6格
+    const colDist = col - cx;
+    const rowDist = row - cy;
     if (
-      Math.abs(col - cx) <= range &&
-      Math.abs(row - cy) <= range
+      colDist >= -6 &&
+      colDist <= 5 &&
+      rowDist >= -6 &&
+      rowDist <= 5
     )
       return true;
+  }
+  return false;
+}
+
+/** 判断设备是否供电：只要设备占用的格子中有任何一个在供电范围内即可 */
+export function isDevicePowered(device: GridDevice, allDevices: GridDevice[]): boolean {
+  const occupiedCells = getDeviceOccupiedCells(device);
+  for (const [col, row] of occupiedCells) {
+    if (isCellPowered(col, row, allDevices)) {
+      return true;
+    }
   }
   return false;
 }

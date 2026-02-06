@@ -1,4 +1,5 @@
 import { Group, Rect, Line, Path } from 'react-konva';
+import Konva from 'konva';
 import type { PipelineElement as PipelineElementType, Rotation } from '../../types';
 import { CELL_SIZE } from '../../constants/grid';
 import { useGameStore } from '../../store/useGameStore';
@@ -15,17 +16,28 @@ function elementGroupPosition(col: number, row: number) {
 
 export function PipelineElementRect({ element }: { element: PipelineElementType }) {
   const setEditModal = useGameStore((s) => s.setEditModal);
+  const setSelectedElementId = useGameStore((s) => s.setSelectedElementId);
+  const selectedElementId = useGameStore((s) => s.selectedElementId);
   const pos = elementGroupPosition(element.col, element.row);
   const r = rotationToDeg(element.rotation);
+  const isSelected = selectedElementId === element.id;
 
-  const handleClick = () => {
+  const handleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if ('button' in e.evt && e.evt.button === 2) return;
+    setSelectedElementId(element.id);
     setEditModal({ type: 'pipeline_element', element });
   };
 
   if (element.kind === 'cross_bridge') {
     return (
       <Group {...pos} rotation={r} onClick={handleClick} onTap={handleClick}>
-        <Rect width={CELL} height={CELL} fill="#FFD700" stroke="#333" />
+        <Rect
+          width={CELL}
+          height={CELL}
+          fill="#FFD700"
+          stroke={isSelected ? '#4169E1' : '#333'}
+          strokeWidth={isSelected ? 3 : 1}
+        />
         <Line points={[CX, 0, CX, CELL]} stroke="black" strokeWidth={2} />
         <Line points={[0, CY, CELL, CY]} stroke="black" strokeWidth={2} />
       </Group>
@@ -35,7 +47,13 @@ export function PipelineElementRect({ element }: { element: PipelineElementType 
   if (element.kind === 'splitter') {
     return (
       <Group {...pos} rotation={r} onClick={handleClick} onTap={handleClick}>
-        <Rect width={CELL} height={CELL} fill="#FFD700" stroke="#333" />
+        <Rect
+          width={CELL}
+          height={CELL}
+          fill="#FFD700"
+          stroke={isSelected ? '#4169E1' : '#333'}
+          strokeWidth={isSelected ? 3 : 1}
+        />
         <ThreeArrowsFromLeft />
       </Group>
     );
@@ -44,7 +62,13 @@ export function PipelineElementRect({ element }: { element: PipelineElementType 
   if (element.kind === 'merger') {
     return (
       <Group {...pos} rotation={r} onClick={handleClick} onTap={handleClick}>
-        <Rect width={CELL} height={CELL} fill="#FFD700" stroke="#333" />
+        <Rect
+          width={CELL}
+          height={CELL}
+          fill="#FFD700"
+          stroke={isSelected ? '#4169E1' : '#333'}
+          strokeWidth={isSelected ? 3 : 1}
+        />
         <ThreeArrowsToRight />
       </Group>
     );

@@ -8,6 +8,7 @@ export function GridLayer() {
   const gridCols = useGameStore((s) => s.gridCols);
   const gridRows = useGameStore((s) => s.gridRows);
   const editModal = useGameStore((s) => s.editModal);
+  const devices = useGameStore((s) => s.devices);
 
   const verticalLines = useMemo(() => {
     const out: { key: string; points: number[] }[] = [];
@@ -31,17 +32,42 @@ export function GridLayer() {
     return out;
   }, [gridCols, gridRows]);
 
-  const powerRangeLines = useMemo(() => {
+  /** 所有供电桩覆盖的格子（去重） */
+  const allPoweredCells = useMemo(() => {
+    const cellSet = new Set<string>();
+    for (const device of devices) {
+      const def = DEVICE_DEFS[device.kind];
+      if (!def.isPowerSource || def.powerRange == null) continue;
+      const [cx, cy] = [device.col + 1, device.row + 1];
+      // 12x12 范围：以供电桩中心为中心，左右各6格，上下各6格
+      const minC = Math.max(0, cx - 6);
+      const maxC = Math.min(gridCols - 1, cx + 5);
+      const minR = Math.max(0, cy - 6);
+      const maxR = Math.min(gridRows - 1, cy + 5);
+      for (let col = minC; col <= maxC; col++) {
+        for (let row = minR; row <= maxR; row++) {
+          cellSet.add(`${col},${row}`);
+        }
+      }
+    }
+    return Array.from(cellSet).map((s) => {
+      const [col, row] = s.split(',').map(Number);
+      return [col, row] as [number, number];
+    });
+  }, [devices, gridCols, gridRows]);
+
+  /** 选中供电桩时的范围外描边 */
+  const selectedPowerRangeLines = useMemo(() => {
     if (editModal?.type !== 'device') return null;
     const device = editModal.device;
     const def = DEVICE_DEFS[device.kind];
     if (!def.isPowerSource || def.powerRange == null) return null;
     const [cx, cy] = [device.col + 1, device.row + 1];
-    const r = def.powerRange;
-    const minC = Math.max(0, cx - r);
-    const maxC = Math.min(gridCols - 1, cx + r);
-    const minR = Math.max(0, cy - r);
-    const maxR = Math.min(gridRows - 1, cy + r);
+    // 12x12 范围：以供电桩中心为中心，左右各6格，上下各6格
+    const minC = Math.max(0, cx - 6);
+    const maxC = Math.min(gridCols - 1, cx + 5);
+    const minR = Math.max(0, cy - 6);
+    const maxR = Math.min(gridRows - 1, cy + 5);
     const outline: number[] = [];
     const top = minR * CELL_SIZE;
     const bottom = (maxR + 1) * CELL_SIZE;
@@ -51,25 +77,9 @@ export function GridLayer() {
     return outline;
   }, [editModal, gridCols, gridRows]);
 
-  const poweredCells = useMemo(() => {
-    if (editModal?.type !== 'device') return null;
-    const device = editModal.device;
-    const def = DEVICE_DEFS[device.kind];
-    if (!def.isPowerSource || def.powerRange == null) return null;
-    const [cx, cy] = [device.col + 1, device.row + 1];
-    const r = def.powerRange;
-    const cells: [number, number][] = [];
-    for (let col = Math.max(0, cx - r); col <= Math.min(gridCols - 1, cx + r); col++) {
-      for (let row = Math.max(0, cy - r); row <= Math.min(gridRows - 1, cy + r); row++) {
-        cells.push([col, row]);
-      }
-    }
-    return cells;
-  }, [editModal, gridCols, gridRows]);
-
   return (
     <>
-      {poweredCells?.map(([col, row]) => (
+      {allPoweredCells.map(([col, row]) => (
         <Line
           key={`p-${col}-${row}`}
           points={[
@@ -90,9 +100,9 @@ export function GridLayer() {
           listening={false}
         />
       ))}
-      {powerRangeLines && (
+      {selectedPowerRangeLines && (
         <Line
-          points={powerRangeLines}
+          points={selectedPowerRangeLines}
           stroke="blue"
           strokeWidth={2}
           lineCap="square"

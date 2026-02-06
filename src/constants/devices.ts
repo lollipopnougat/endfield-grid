@@ -25,7 +25,7 @@ export const DEVICE_DEFS: Record<DeviceKind, DeviceDef> = {
     name: '供电桩',
     color: '#87CEEB', // 天蓝
     isPowerSource: true,
-    powerRange: 6, // 12x12 范围 => 半径 6
+    powerRange: 5, // 12x12 范围：从中心向左5格、向右6格，共12格（实际用 leftRange=5, rightRange=6）
   },
   heat_pool: {
     kind: 'heat_pool',

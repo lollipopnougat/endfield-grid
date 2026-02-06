@@ -1,23 +1,29 @@
 import { Group, Rect, Circle, Line, Path, Text } from 'react-konva';
+import Konva from 'konva';
 import type { GridDevice } from '../../types';
 import { DEVICE_DEFS, parseSize } from '../../constants/devices';
 import { CELL_SIZE } from '../../constants/grid';
 import { useGameStore } from '../../store/useGameStore';
-import { isCellPowered } from '../../utils/grid';
+import { isDevicePowered } from '../../utils/grid';
 
 const CELL = CELL_SIZE;
 
 export function DeviceRect({ device }: { device: GridDevice }) {
   const setEditModal = useGameStore((s) => s.setEditModal);
+  const setSelectedDeviceId = useGameStore((s) => s.setSelectedDeviceId);
+  const selectedDeviceId = useGameStore((s) => s.selectedDeviceId);
   const devices = useGameStore((s) => s.devices);
   const def = DEVICE_DEFS[device.kind];
   const [w, h] = parseSize(def.size);
   const isProduction = def.size === '3x3' || def.size === '4x6' || def.size === '6x6';
-  const powered = isProduction ? isCellPowered(device.col, device.row, devices) : true;
+  const powered = isProduction ? isDevicePowered(device, devices) : true;
   const ox = (w * CELL) / 2;
   const oy = (h * CELL) / 2;
+  const isSelected = selectedDeviceId === device.id;
 
-  const handleClick = () => {
+  const handleClick = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+    if ('button' in e.evt && e.evt.button === 2) return;
+    setSelectedDeviceId(device.id);
     setEditModal({ type: 'device', device });
   };
 
@@ -54,10 +60,20 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         offsetX={ox}
         offsetY={oy}
         onClick={handleClick}
-        onTap={handleClick}
+        onTap={(e) => {
+          setSelectedDeviceId(device.id);
+          setEditModal({ type: 'device', device });
+        }}
         listening
       >
-        <Circle x={ox} y={oy} radius={CELL} fill={def.color} stroke="#333" strokeWidth={1} />
+        <Circle
+          x={ox}
+          y={oy}
+          radius={CELL}
+          fill={def.color}
+          stroke={isSelected ? '#4169E1' : '#333'}
+          strokeWidth={isSelected ? 3 : 1}
+        />
         {deviceNameText}
       </Group>
     );
@@ -72,10 +88,21 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         offsetX={ox}
         offsetY={oy}
         onClick={handleClick}
-        onTap={handleClick}
+        onTap={(e) => {
+          setSelectedDeviceId(device.id);
+          setEditModal({ type: 'device', device });
+        }}
         listening
       >
-        <Rect x={0} y={0} width={rectW} height={rectH} fill={def.color} stroke="#333" />
+        <Rect
+          x={0}
+          y={0}
+          width={rectW}
+          height={rectH}
+          fill={def.color}
+          stroke={isSelected ? '#4169E1' : '#333'}
+          strokeWidth={isSelected ? 3 : 1}
+        />
         {/* 输入口在左侧，箭头指向设备内侧（向右） */}
         <ArrowAtCell cellCol={0} cellRow={0} direction="right" />
         <ArrowAtCell cellCol={0} cellRow={1} direction="right" />
@@ -103,7 +130,8 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         width={rectW}
         height={rectH}
         fill={def.color}
-        stroke="#333"
+        stroke={isSelected ? '#4169E1' : '#333'}
+        strokeWidth={isSelected ? 3 : 1}
       />
       {Array.from({ length: numPorts }, (_, i) => (
         <ArrowAtCell key={'in-' + i} cellCol={0} cellRow={i} direction="right" />
@@ -113,7 +141,7 @@ export function DeviceRect({ device }: { device: GridDevice }) {
       ))}
       {deviceNameText}
       {!powered && (
-        <Group x={ox} y={oy} offsetX={12} offsetY={12}>
+        <Group x={ox} y={0} offsetX={12} offsetY={12}>
           <Circle x={0} y={0} r={14} fill="red" />
           <Line points={[-8, -8, 8, 8]} stroke="white" strokeWidth={3} />
           <Line points={[8, -8, -8, 8]} stroke="white" strokeWidth={3} />
