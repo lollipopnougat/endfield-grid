@@ -4,6 +4,7 @@ import Konva from 'konva';
 import { useGameStore } from '../store/useGameStore';
 import { GridLayer } from './grid/GridLayer';
 import { DevicesLayer } from './devices/DevicesLayer';
+import { DevicePreview } from './devices/DevicePreview';
 import { PipelineLayer } from './pipeline/PipelineLayer';
 import { getCoordFromPoint } from '../utils/canvasCoord';
 import { canPlaceDevice, canPlacePipelineElement } from '../utils/placeDevice';
@@ -22,11 +23,14 @@ export function GameCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [pipelineDraw, setPipelineDraw] = useState<PipelineDrawState | null>(null);
+  /** 放置设备时，鼠标所在格子的预览位置（贴靠网格） */
+  const [devicePreviewCell, setDevicePreviewCell] = useState<{ col: number; row: number } | null>(null);
   const {
     view,
     setView,
     setStageSize,
     toolMode,
+    setToolMode,
     placeDevice,
     movingDeviceId,
     movingPipelineElementId,
@@ -50,6 +54,12 @@ export function GameCanvas() {
     ro.observe(el);
     return () => ro.disconnect();
   }, [setStageSize]);
+
+  useEffect(() => {
+    if (typeof toolMode !== 'object' || !('device' in toolMode)) {
+      setDevicePreviewCell(null);
+    }
+  }, [toolMode]);
 
   const handleWheel = useCallback(
     (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -85,6 +95,14 @@ export function GameCanvas() {
   const handleStageClick = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
       if (e.target.getType() !== 'Stage') return;
+      const isRightClick = 'button' in e.evt && e.evt.button === 2;
+      if (isRightClick) {
+        if (typeof toolMode === 'object' && 'device' in toolMode) {
+          e.evt.preventDefault();
+          setToolMode('select');
+        }
+        return;
+      }
       if (pipelineDraw) return;
       const stage = stageRef.current;
       if (!stage) return;
@@ -127,6 +145,7 @@ export function GameCanvas() {
     [
       toolMode,
       view,
+      setToolMode,
       placeDevice,
       movingDeviceId,
       movingPipelineElementId,
@@ -238,12 +257,70 @@ export function GameCanvas() {
     setPipelineDraw(null);
   }, []);
 
+  const handleStageMouseMove = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+      const stage = stageRef.current;
+      if (!stage) return;
+      const pos = stage.getPointerPosition();
+      if (!pos) return;
+      const [col, row] = getCoordFromPoint(pos, view);
+      const state = useGameStore.getState();
+
+      if (pipelineDraw && toolMode === 'pipeline') {
+        setDevicePreviewCell(null);
+        handlePipelineMouseMove(e as Konva.KonvaEventObject<MouseEvent>);
+        return;
+      }
+
+      if (typeof toolMode === 'object' && 'device' in toolMode) {
+        if (col >= 0 && row >= 0 && col < state.gridCols && row < state.gridRows) {
+          setDevicePreviewCell({ col, row });
+        } else {
+          setDevicePreviewCell(null);
+        }
+      } else {
+        setDevicePreviewCell(null);
+      }
+    },
+    [toolMode, view, pipelineDraw, handlePipelineMouseMove]
+  );
+
+  const handleStageMouseLeave = useCallback(() => {
+    setDevicePreviewCell(null);
+    setPipelineDraw(null);
+  }, []);
+
   const stageW = useGameStore((s) => s.stageWidth);
   const stageH = useGameStore((s) => s.stageHeight);
   const isPipelineTool = toolMode === 'pipeline';
+  const isDevicePlaceMode = typeof toolMode === 'object' && 'device' in toolMode;
+  const canPlacePreview =
+    devicePreviewCell &&
+    isDevicePlaceMode &&
+    canPlaceDevice(
+      toolMode.device,
+      devicePreviewCell.col,
+      devicePreviewCell.row,
+      useGameStore.getState()
+    );
+  const showDevicePreview = Boolean(canPlacePreview && devicePreviewCell && isDevicePlaceMode);
+
+  const handleContainerContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      if (typeof toolMode === 'object' && 'device' in toolMode) {
+        e.preventDefault();
+        setToolMode('select');
+      }
+    },
+    [toolMode, setToolMode]
+  );
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', overflow: 'hidden' }}
+      onContextMenu={handleContainerContextMenu}
+    >
       <Stage
         ref={stageRef}
         width={stageW}
@@ -258,9 +335,9 @@ export function GameCanvas() {
         onClick={handleStageClick}
         onTap={handleStageClick}
         onMouseDown={handlePipelineMouseDown}
-        onMouseMove={handlePipelineMouseMove}
+        onMouseMove={handleStageMouseMove}
         onMouseUp={handlePipelineMouseUp}
-        onMouseLeave={() => setPipelineDraw(null)}
+        onMouseLeave={handleStageMouseLeave}
         dragBoundFunc={(pos) => ({ ...pos })}
       >
         <Layer>
@@ -272,6 +349,15 @@ export function GameCanvas() {
         <Layer>
           <PipelineLayer />
         </Layer>
+        {showDevicePreview && devicePreviewCell && isDevicePlaceMode && (
+          <Layer listening={false}>
+            <DevicePreview
+              kind={toolMode.device}
+              col={devicePreviewCell.col}
+              row={devicePreviewCell.row}
+            />
+          </Layer>
+        )}
       </Stage>
     </div>
   );

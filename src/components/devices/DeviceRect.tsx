@@ -21,11 +21,15 @@ export function DeviceRect({ device }: { device: GridDevice }) {
     setEditModal({ type: 'device', device });
   };
 
+  // 贴靠网格：Group 的 (offsetX, offsetY) 放在 (col*CELL+ox, row*CELL+oy)，使矩形 (0,0)-(w*CELL,h*CELL) 刚好占满格子
+  const groupX = device.col * CELL + ox;
+  const groupY = device.row * CELL + oy;
+
   if (device.kind === 'power_station') {
     return (
       <Group
-        x={device.col * CELL}
-        y={device.row * CELL}
+        x={groupX}
+        y={groupY}
         rotation={device.rotation}
         offsetX={ox}
         offsetY={oy}
@@ -41,8 +45,8 @@ export function DeviceRect({ device }: { device: GridDevice }) {
   if (device.kind === 'heat_pool') {
     return (
       <Group
-        x={device.col * CELL}
-        y={device.row * CELL}
+        x={groupX}
+        y={groupY}
         rotation={device.rotation}
         offsetX={ox}
         offsetY={oy}
@@ -51,19 +55,19 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         listening
       >
         <Rect x={0} y={0} width={w * CELL} height={h * CELL} fill={def.color} stroke="#333" />
-        {/* 输入口在左侧两格，箭头上方指向左 */}
-        <ArrowAtCell cellCol={0} cellRow={0} direction="left" />
-        <ArrowAtCell cellCol={0} cellRow={1} direction="left" />
+        {/* 输入口在左侧，箭头指向设备内侧（向右） */}
+        <ArrowAtCell cellCol={0} cellRow={0} direction="right" />
+        <ArrowAtCell cellCol={0} cellRow={1} direction="right" />
       </Group>
     );
   }
 
-  // 3x3 / 4x6 / 6x6: 左侧输入，右侧输出
+  // 3x3 / 4x6 / 6x6: 左侧输入（箭头指向内侧=右），右侧输出（箭头指向外侧=右）
   const numPorts = w === 3 ? 3 : 6;
   return (
     <Group
-      x={device.col * CELL}
-      y={device.row * CELL}
+      x={groupX}
+      y={groupY}
       rotation={device.rotation}
       offsetX={ox}
       offsetY={oy}
@@ -80,7 +84,7 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         stroke="#333"
       />
       {Array.from({ length: numPorts }, (_, i) => (
-        <ArrowAtCell key={'in-' + i} cellCol={0} cellRow={i} direction="left" />
+        <ArrowAtCell key={'in-' + i} cellCol={0} cellRow={i} direction="right" />
       ))}
       {Array.from({ length: numPorts }, (_, i) => (
         <ArrowAtCell key={'out-' + i} cellCol={w - 1} cellRow={i} direction="right" />
