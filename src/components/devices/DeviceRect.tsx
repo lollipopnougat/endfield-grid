@@ -33,22 +33,26 @@ export function DeviceRect({ device }: { device: GridDevice }) {
   const rectW = w * CELL;
   const rectH = h * CELL;
   const fontSize = Math.max(10, Math.min(14, Math.min(rectW, rectH) * 0.28));
+  // 文字和图标需要保持正向，所以需要反向旋转来抵消父 Group 的旋转
+  // 文字 Group 的位置在设备中心 (ox, oy)，旋转中心也在 (ox, oy)，这样旋转后文字位置不变
   const deviceNameText = (
-    <Text
-      x={0}
-      y={0}
-      width={rectW}
-      height={rectH}
-      text={def.name}
-      fontSize={fontSize}
-      fontFamily="sans-serif"
-      align="center"
-      verticalAlign="middle"
-      fill="#333"
-      listening={false}
-      wrap="none"
-      ellipsis
-    />
+    <Group x={ox} y={oy} offsetX={0} offsetY={0} rotation={-device.rotation}>
+      <Text
+        x={-ox}
+        y={-oy}
+        width={rectW}
+        height={rectH}
+        text={def.name}
+        fontSize={fontSize}
+        fontFamily="sans-serif"
+        align="center"
+        verticalAlign="middle"
+        fill="#333"
+        listening={false}
+        wrap="none"
+        ellipsis
+      />
+    </Group>
   );
 
   if (device.kind === 'power_station') {
@@ -60,7 +64,7 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         offsetX={ox}
         offsetY={oy}
         onClick={handleClick}
-        onTap={(e) => {
+        onTap={() => {
           setSelectedDeviceId(device.id);
           setEditModal({ type: 'device', device });
         }}
@@ -88,7 +92,7 @@ export function DeviceRect({ device }: { device: GridDevice }) {
         offsetX={ox}
         offsetY={oy}
         onClick={handleClick}
-        onTap={(e) => {
+        onTap={() => {
           setSelectedDeviceId(device.id);
           setEditModal({ type: 'device', device });
         }}
@@ -141,10 +145,13 @@ export function DeviceRect({ device }: { device: GridDevice }) {
       ))}
       {deviceNameText}
       {!powered && (
-        <Group x={ox} y={0} offsetX={12} offsetY={12}>
-          <Circle x={0} y={0} r={14} fill="red" />
-          <Line points={[-8, -8, 8, 8]} stroke="white" strokeWidth={3} />
-          <Line points={[8, -8, -8, 8]} stroke="white" strokeWidth={3} />
+        <Group x={ox} y={oy} offsetX={0} offsetY={0} rotation={-device.rotation}>
+          {/* 图标位置在设备顶部中心，相对于设备中心 (ox, oy) 的偏移是 (0, -oy + 14) */}
+          <Group x={0} y={-oy + 14}>
+            <Circle x={0} y={0} r={14} fill="red" />
+            <Line points={[-8, -8, 8, 8]} stroke="white" strokeWidth={3} />
+            <Line points={[8, -8, -8, 8]} stroke="white" strokeWidth={3} />
+          </Group>
         </Group>
       )}
     </Group>

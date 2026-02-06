@@ -46,6 +46,8 @@ export function GameCanvas() {
     updatePipelineCell,
     setSelectedDeviceId,
     setSelectedElementId,
+    setMovingPipelineElementId,
+    cancelMovingDevice,
     devices,
     gridCols,
     gridRows,
@@ -120,6 +122,16 @@ export function GameCanvas() {
           e.evt.preventDefault();
           setToolMode('select');
         }
+        if (movingDeviceId) {
+          e.evt.preventDefault();
+          // 右键退出移动模式时，恢复设备到原位置
+          cancelMovingDevice();
+        }
+        if (movingPipelineElementId) {
+          e.evt.preventDefault();
+          setMovingPipelineElementId(null);
+          setSelectedElementId(null);
+        }
         return;
       }
       setSelectedDeviceId(null);
@@ -134,8 +146,13 @@ export function GameCanvas() {
 
       if (movingDeviceId) {
         const device = state.devices.find((d) => d.id === movingDeviceId);
-        if (device && canPlaceDevice(device.kind, col, row, state, movingDeviceId)) {
-          moveDeviceTo(movingDeviceId, col, row);
+        if (device) {
+          // 移动模式下：如果目标位置就是当前位置，直接允许；否则检查是否可以放置
+          if (col === device.col && row === device.row) {
+            moveDeviceTo(movingDeviceId, col, row);
+          } else if (canPlaceDevice(device.kind, col, row, state, movingDeviceId)) {
+            moveDeviceTo(movingDeviceId, col, row);
+          }
         }
         return;
       }

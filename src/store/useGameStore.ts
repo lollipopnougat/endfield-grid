@@ -28,6 +28,8 @@ interface GameState {
   selectedElementId: string | null;
   /** 移动中的设备 id，下次点击放置 */
   movingDeviceId: string | null;
+  /** 移动中的设备原位置（用于右键取消时恢复） */
+  movingDeviceOriginalPos: { col: number; row: number } | null;
   /** 移动中的流水线连接元素 id */
   movingPipelineElementId: string | null;
   /** 画布尺寸（用于适配屏幕） */
@@ -55,6 +57,7 @@ interface GameState {
   setSelectedDeviceId: (id: string | null) => void;
   setSelectedElementId: (id: string | null) => void;
   setMovingDeviceId: (id: string | null) => void;
+  cancelMovingDevice: () => void;
   setMovingPipelineElementId: (id: string | null) => void;
   setStageSize: (w: number, h: number) => void;
   moveDeviceTo: (id: string, col: number, row: number) => void;
@@ -79,6 +82,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   selectedDeviceId: null,
   selectedElementId: null,
   movingDeviceId: null,
+  movingDeviceOriginalPos: null,
   movingPipelineElementId: null,
   stageWidth: 800,
   stageHeight: 600,
@@ -158,13 +162,48 @@ export const useGameStore = create<GameState>((set, get) => ({
   setEditModal: (modal) => set({ editModal: modal }),
   setSelectedDeviceId: (id) => set({ selectedDeviceId: id }),
   setSelectedElementId: (id) => set({ selectedElementId: id }),
-  setMovingDeviceId: (id) => set({ movingDeviceId: id }),
+  setMovingDeviceId: (id) =>
+    set((s) => {
+      if (id === null) {
+        return { movingDeviceId: null, movingDeviceOriginalPos: null };
+      }
+      const device = s.devices.find((d) => d.id === id);
+      if (device) {
+        return {
+          movingDeviceId: id,
+          movingDeviceOriginalPos: { col: device.col, row: device.row },
+        };
+      }
+      return { movingDeviceId: id };
+    }),
+  cancelMovingDevice: () =>
+    set((s) => {
+      if (s.movingDeviceId && s.movingDeviceOriginalPos) {
+        const next = s.devices.map((d) =>
+          d.id === s.movingDeviceId
+            ? { ...d, col: s.movingDeviceOriginalPos!.col, row: s.movingDeviceOriginalPos!.row }
+            : d
+        );
+        return {
+          devices: next,
+          movingDeviceId: null,
+          movingDeviceOriginalPos: null,
+          selectedDeviceId: null,
+        };
+      }
+      return { movingDeviceId: null, movingDeviceOriginalPos: null, selectedDeviceId: null };
+    }),
   setMovingPipelineElementId: (id) => set({ movingPipelineElementId: id }),
   setStageSize: (w, h) => set({ stageWidth: w, stageHeight: h }),
   moveDeviceTo: (id, col, row) =>
     set((s) => {
       const next = s.devices.map((d) => (d.id === id ? { ...d, col, row } : d));
-      return { devices: next, movingDeviceId: null };
+      return {
+        devices: next,
+        movingDeviceId: null,
+        movingDeviceOriginalPos: null,
+        selectedDeviceId: null,
+      };
     }),
   movePipelineElementTo: (id, col, row) =>
     set((s) => ({
@@ -204,5 +243,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       })),
       editModal: null,
       movingDeviceId: null,
+      movingDeviceOriginalPos: null,
     }),
 }));
