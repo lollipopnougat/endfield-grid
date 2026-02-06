@@ -40,6 +40,7 @@ interface GameState {
   addDevice: (device: Omit<GridDevice, 'id'>) => void;
   updateDevice: (id: string, patch: Partial<GridDevice>) => void;
   removeDevice: (id: string) => void;
+  clearAllDevices: () => void;
   setDevicePosition: (id: string, col: number, row: number) => void;
   rotateDevice: (id: string) => void;
 
@@ -102,6 +103,18 @@ export const useGameStore = create<GameState>((set, get) => ({
       devices: s.devices.filter((d) => d.id !== id),
       editModal: s.editModal && (s.editModal as { type: string; device: GridDevice }).device?.id === id ? null : s.editModal,
     })),
+  clearAllDevices: () =>
+    set({
+      devices: [],
+      pipelineCells: [],
+      pipelineElements: [],
+      editModal: null,
+      selectedDeviceId: null,
+      selectedElementId: null,
+      movingDeviceId: null,
+      movingDeviceOriginalPos: null,
+      movingPipelineElementId: null,
+    }),
   setDevicePosition: (id, col, row) =>
     set((s) => ({
       devices: s.devices.map((d) => (d.id === id ? { ...d, col, row } : d)),

@@ -9,11 +9,12 @@
 }
 
 .modal {
-  background: #2a2a2a;
+  background: rgba(42, 42, 42, 0.9);
   border-radius: 8px;
   padding: 1.25rem;
   min-width: 280px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
 }
 
 .modal h3 {

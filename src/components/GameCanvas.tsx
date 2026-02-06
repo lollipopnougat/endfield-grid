@@ -44,6 +44,7 @@ export function GameCanvas() {
     addPipelineCell,
     addPipelineElement,
     updatePipelineCell,
+    removePipelineCell,
     setSelectedDeviceId,
     setSelectedElementId,
     setMovingPipelineElementId,
@@ -206,20 +207,41 @@ export function GameCanvas() {
       const [col, row] = getCoordFromPoint(pos, view);
       if (col < 0 || row < 0 || col >= gridCols || row >= gridRows) return;
       if (isCellOccupiedByDevice(col, row, devices)) return;
-      const segmentId = nextId('seg');
-      addPipelineCell({
-        col,
-        row,
-        direction: 'right',
-        segmentId,
-      });
       const state = useGameStore.getState();
-      const added = state.pipelineCells.find(
-        (p) => p.segmentId === segmentId && p.col === col && p.row === row
-      );
-      if (added) setPipelineDraw({ segmentId, lastCell: { col, row }, lastCellId: added.id });
+      if (hasPipelineAt(col, row, state.pipelineCells)) {
+        // 初始点击位置已有流水线：移除该位置的所有流水线格子，替换为交叉桥
+        const cellsAtCross = state.pipelineCells.filter(
+          (p) => p.col === col && p.row === row
+        );
+        cellsAtCross.forEach((cell) => {
+          removePipelineCell(cell.id);
+        });
+        const hasBridge = state.pipelineElements.some(
+          (el) => el.kind === 'cross_bridge' && el.col === col && el.row === row
+        );
+        if (!hasBridge) {
+          addPipelineElement({ kind: 'cross_bridge', col, row, rotation: 0 });
+        }
+        // 从交叉桥开始绘制新的流水线段
+        const segmentId = nextId('seg');
+        setPipelineDraw({ segmentId, lastCell: { col, row }, lastCellId: '' });
+      } else {
+        // 初始点击位置没有流水线：正常添加流水线格子
+        const segmentId = nextId('seg');
+        addPipelineCell({
+          col,
+          row,
+          direction: 'right',
+          segmentId,
+        });
+        const nextState = useGameStore.getState();
+        const added = nextState.pipelineCells.find(
+          (p) => p.segmentId === segmentId && p.col === col && p.row === row
+        );
+        if (added) setPipelineDraw({ segmentId, lastCell: { col, row }, lastCellId: added.id });
+      }
     },
-    [toolMode, view, gridCols, gridRows, devices, addPipelineCell]
+    [toolMode, view, gridCols, gridRows, devices, addPipelineCell, addPipelineElement, removePipelineCell]
   );
 
   const handlePipelineMouseMove = useCallback(
@@ -253,31 +275,62 @@ export function GameCanvas() {
         return;
       }
       const dir = getDirection(pipelineDraw.lastCell, { col, row });
-      updatePipelineCell(pipelineDraw.lastCellId, { direction: dir });
-      if (hasPipelineAt(col, row, state.pipelineCells)) {
-        const hasBridge = state.pipelineElements.some(
-          (el) => el.kind === 'cross_bridge' && el.col === col && el.row === row
-        );
-        if (!hasBridge) {
-          addPipelineElement({ kind: 'cross_bridge', col, row, rotation: 0 });
-        }
+      // 只有当 lastCellId 存在且不是空字符串时，才更新上一个格子的方向
+      if (pipelineDraw.lastCellId) {
+        updatePipelineCell(pipelineDraw.lastCellId, { direction: dir });
       }
-      addPipelineCell({
-        col,
-        row,
-        direction: dir,
-        segmentId: pipelineDraw.segmentId,
-      });
-      const nextState = useGameStore.getState();
-      const added = nextState.pipelineCells.find(
-        (p) => p.segmentId === pipelineDraw.segmentId && p.col === col && p.row === row
+      // 检查当前位置是否已有交叉桥
+      const hasBridge = state.pipelineElements.some(
+        (el) => el.kind === 'cross_bridge' && el.col === col && el.row === row
       );
-      if (added) {
+      if (hasBridge) {
+        // 如果已有交叉桥，不添加流水线格子，只更新 pipelineDraw 状态
         setPipelineDraw({
           segmentId: pipelineDraw.segmentId,
           lastCell: { col, row },
-          lastCellId: added.id,
+          lastCellId: pipelineDraw.lastCellId,
         });
+        return;
+      }
+      // 检查是否有其他 segment 的流水线在这个位置（排除当前 segment）
+      const hasOtherPipeline = state.pipelineCells.some(
+        (p) => p.col === col && p.row === row && p.segmentId !== pipelineDraw.segmentId
+      );
+      if (hasOtherPipeline) {
+        // 交叉点：移除该位置的所有流水线格子（包括当前 segment 的，如果有），替换为交叉桥
+        const cellsAtCross = state.pipelineCells.filter(
+          (p) => p.col === col && p.row === row
+        );
+        cellsAtCross.forEach((cell) => {
+          removePipelineCell(cell.id);
+        });
+        addPipelineElement({ kind: 'cross_bridge', col, row, rotation: 0 });
+        // 交叉点不添加新的流水线格子，因为已经被交叉桥替代
+        // 更新 pipelineDraw 状态，但保持 lastCellId 不变（因为交叉桥不是流水线格子）
+        setPipelineDraw({
+          segmentId: pipelineDraw.segmentId,
+          lastCell: { col, row },
+          lastCellId: pipelineDraw.lastCellId,
+        });
+      } else {
+        // 非交叉点：正常添加流水线格子
+        addPipelineCell({
+          col,
+          row,
+          direction: dir,
+          segmentId: pipelineDraw.segmentId,
+        });
+        const nextState = useGameStore.getState();
+        const added = nextState.pipelineCells.find(
+          (p) => p.segmentId === pipelineDraw.segmentId && p.col === col && p.row === row
+        );
+        if (added) {
+          setPipelineDraw({
+            segmentId: pipelineDraw.segmentId,
+            lastCell: { col, row },
+            lastCellId: added.id,
+          });
+        }
       }
     },
     [
